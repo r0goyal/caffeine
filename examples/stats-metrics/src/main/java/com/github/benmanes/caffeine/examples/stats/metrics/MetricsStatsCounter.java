@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.benmanes.caffeine.examples.stats.metrics;
-
-import static java.util.Objects.requireNonNull;
-
-import java.util.concurrent.TimeUnit;
+package com.phonepe.payments.paymentservice.cache;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.github.benmanes.caffeine.cache.RemovalCause;
 import com.github.benmanes.caffeine.cache.stats.CacheStats;
 import com.github.benmanes.caffeine.cache.stats.StatsCounter;
+
+import java.util.concurrent.TimeUnit;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * A {@link StatsCounter} instrumented with Dropwizard Metrics.
@@ -80,21 +79,28 @@ public final class MetricsStatsCounter implements StatsCounter {
   }
 
   @Override
-  public void recordEviction(int weight, RemovalCause cause) {
+  @SuppressWarnings("deprecation")
+  public void recordEviction() {
+    // This method is scheduled for removal in version 3.0 in favor of recordEviction(weight)
+    recordEviction(1);
+  }
+
+  @Override
+  public void recordEviction(int weight) {
     evictionCount.inc();
     evictionWeight.inc(weight);
   }
 
   @Override
   public CacheStats snapshot() {
-    return CacheStats.of(
-        hitCount.getCount(),
-        missCount.getCount(),
-        loadSuccessCount.getCount(),
-        loadFailureCount.getCount(),
-        totalLoadTime.getCount(),
-        evictionCount.getCount(),
-        evictionWeight.getCount());
+    return new CacheStats(
+            hitCount.getCount(),
+            missCount.getCount(),
+            loadSuccessCount.getCount(),
+            loadFailureCount.getCount(),
+            totalLoadTime.getCount(),
+            evictionCount.getCount(),
+            evictionWeight.getCount());
   }
 
   @Override
